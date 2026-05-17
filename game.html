@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משימת סייבר: חדר הבריחה והידע המלא</title>
+    <style>
+        :root {
+            --primary: #00ffcc;
+            --secondary: #9d4edd;
+            --bg: #0b0c10;
+            --card-bg: #1f2833;
+            --text: #c5c6c7;
+            --success: #2ec4b6;
+            --danger: #e63946;
+            --light-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-box {
+            width: 100%;
+            max-width: 750px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 25px rgba(0, 255, 204, 0.2);
+            border: 2px solid var(--primary);
+        }
+
+        /* מערכת לשוניות */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+            padding-bottom: 15px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: var(--text);
+            border: 2px solid transparent;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+        }
+
+        .tab-content { display: none; text-align: center; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { color: var(--primary); margin-top: 0; text-shadow: 0 0 10px rgba(0,255,204,0.3); text-align: center; }
+        h2 { color: var(--secondary); text-align: center; }
+        p { line-height: 1.6; }
+
+        /* סגנון דף מידע */
+        .info-section { text-align: right; margin-bottom: 25px; }
+        .info-card {
+            background: var(--light-bg);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-right: 4px solid var(--primary);
+        }
+        .info-card h3 { margin-top: 0; color: var(--primary); }
+
+        .hidden { display: none !important; }
+        
+        button.action-btn {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+        button.action-btn:hover {
+            background: var(--primary);
+            color: var(--bg);
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        /* משחק הזיכרון */
+        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+        .memory-card {
+            height: 100px; background: #111; border: 1px solid var(--secondary); border-radius: 8px;
+            display: flex; justify-content: center; align-items: center; font-size: 0.95rem; font-weight: bold;
+            cursor: pointer; color: transparent; user-select: none; transition: background 0.3s, color 0.1s; padding: 5px;
+        }
+        .memory-card.flipped { background: var(--secondary); color: white; }
+        .memory-card.matched { background: var(--success); color: var(--bg); cursor: default; border-color: var(--success); }
+
+        /* משחק המיון */
+        .sorting-container {
+            background: #111; padding: 25px; border-radius: 12px; margin: 20px 0;
+            border: 1px dashed var(--primary); min-height: 120px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+        }
+        .sort-btn-group { display: flex; gap: 20px; justify-content: center; }
+        .btn-safe { border-color: var(--success); color: var(--success); }
+        .btn-safe:hover { background: var(--success); color: #fff; box-shadow: 0 0 15px var(--success); }
+        .btn-danger { border-color: var(--danger); color: var(--danger); }
+        .btn-danger:hover { background: var(--danger); color: #fff; box-shadow: 0 0 15px var(--danger); }
+
+        /* המקלדת הנומרית */
+        .keypad { display: grid; grid-template-columns: repeat(3, 60px); gap: 10px; justify-content: center; margin: 20px 0; }
+        .key {
+            height: 60px; background: #111; border: 1px solid var(--primary); color: var(--primary);
+            font-size: 1.5rem; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer;
+        }
+        .key:active { background: var(--primary); color: #000; }
+        #code-display {
+            font-size: 2rem; letter-spacing: 10px; background: #000; padding: 10px; width: 180px;
+            margin: 0 auto 15px; border-radius: 5px; color: var(--danger); height: 40px;
+        }
+
+        #feedback { height: 25px; font-weight: bold; margin-top: 15px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="game-box">
+    <!-- תפריט לשוניות עליון -->
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-link-info" onclick="switchTab('info-tab')">📋 דף רקע ומידע</button>
+        <button class="tab-btn" id="tab-link-game" onclick="switchTab('game-tab')">🔐 חדר הבריחה</button>
+    </div>
+
+    <!-- לשונית 1: דף רקע ומידע -->
+    <div id="info-tab" class="tab-content active">
+        <h1>🌐 מרכז המידע: הגנה במרחב הדיגיטלי</h1>
+        <p>קראו בעיון את חומרי הרקע. המידע כאן יעזור לכם לא רק לגלוש בבטחה, אלא גם יספק לכם רמזים קריטיים לפיצוח מנעול הקוד בהמשך!</p>
+        
+        <div class="info-section">
+            <div class="info-card">
+                <h3>🚨 רקע המשימה: מתקפת הסייבר</h3>
+                <p>קבוצת האקרים אלמונית נעלה את שרתי בית הספר והצפינה את כל הציונים והנתונים. הם השאירו מאחוריהם מערכת הגנה משולשת המבוססת על עקרונות הגנת הסייבר. רק מי שמכיר את חוקי הבטיחות ברשת יוכל לעבור את האתגרים, להשיג את קוד הנטרול ולשחרר את המערכת.</p>
+            </div>
+
+            <div class="info-card">
+                <h3>🎣 איום הפישינג (דיוג) וקישורים חשודים</h3>
+                <p>פישינג הוא שיטה שבה תוקפים מתחזים לחברות מוכרות (כמו גוגל, בנקים או חברות משלוחים) ושולחים הודעות מבהילות או מפתות (כמו "זכית באייפון" או "חשבונך נחסם"). המטרה שלהם היא לגרום לכם ללחוץ על <strong>קישור מזויף</strong> ולהקליד בו את הסיסמה או הפרטים האישיים שלכם.</p>
+            </div>
+
+            <div class="info-card">
+                <h3>🧱 חומת הסיסמאות והמנעול הכפול</h3>
+                <p>סיסמה חלשה (כמו השם שלכם, או "123456") מקבלת ציון בטיחות נמוך מאוד וניתן לפרוץ אותה בשניות. סיסמה חזקה באמת חייבת לשלב אותיות גדולות וקטנות, מספרים וסימנים מיוחדים.</p>
+                <p>כדי להתמגן באמת, מפעילים בכל האפליקציות <strong>אימות דו-שלבי (2FA)</strong>. זהו מנגנון הגנה בעל <strong>שני שלבים</strong>: מעבר לסיסמה הרגילה, המערכת דורשת קוד זמני שנשלח ישירות לטלפון הנייד שלכם, מה שמונע מהאקרים להיכנס גם אם הם גילו את הסיסמה.</p>
+            </div>
+
+            <div class="info-card">
+                <h3>🆘 קו ההגנה הלאומי - מוקד 105</h3>
+                <p>בכל מקרה של פגיעה, סחיטה, בריונות, שיימינג או חשיפה לתוכן מאיים ברשת, יש למי לפנות. מדינת ישראל מפעילה את <strong>מוקד 105</strong> - המטה הלאומי להגנה על ילדים ברשת. המוקד מאויש על ידי שוטרים ומומחים 24/7 ומסייע בטיפול מיידי באירועים פוגעניים.</p>
+            </div>
+        </div>
+        <button class="action-btn" onclick="switchTab('game-tab')">עברו לחדר הבריחה 🚀</button>
+    </div>
+
+    <!-- לשונית 2: המשחק -->
+    <div id="game-tab" class="tab-content">
+        <!-- מסך פתיחה של המשחק -->
+        <div id="intro-screen">
+            <h1>🔐 חדר הבריחה הדיגיטלי</h1>
+            <p>הגעתם למסך הפיקוד. לפניכם 3 חדרים נעולים. עברו אותם אחד אחד כדי להציל את המערכת.</p>
+            <button class="action-btn" onclick="startRoom(1)">התחל בפריצה</button>
+        </div>
+
+        <!-- חדר 1: משחק הזיכרון -->
+        <div id="room1" class="hidden">
+            <h2>חדר 1: משחק הזיכרון הדיגיטלי</h2>
+            <p>מצאו את הזוגות המתאימים בין איומי הרשת לדרכי ההתגוננות כדי לפתוח את השער הראשון.</p>
+            <div class="memory-grid" id="memory-grid"></div>
+        </div>
+
+        <!-- חדר 2: משחק המיון -->
+        <div id="room2" class="hidden">
+            <h2>חדר 2: מסננת הסייבר</h2>
+            <p>לפניכם הודעות ומצבים מהרשת. מיינו אותם במהירות: האם המצב <strong>בטוח</strong> או <strong>חשוד/מסוכן</strong>?</p>
+            <div id="sort-progress" style="font-size: 0.9rem; color: var(--primary);"></div>
+            <div class="sorting-container" id="scenarios-box">טוען מצב...</div>
+            <div class="sort-btn-group">
+                <button class="btn-safe action-btn" style="padding: 10px 20px;" onclick="handleSort(true)">🟢 בטוח לגמרי</button>
+                <button class="btn-danger action-btn" style="padding: 10px 20px;" onclick="handleSort(false)">🔴 חשוד / מסוכן</button>
+            </div>
+        </div>
+
+        <!-- חדר 3: פיצוח הקוד -->
+        <div id="room3" class="hidden">
+            <h2>חדר 3: מנעול הקוד הסופי</h2>
+            <p>כדי לנטרל את הווירוס, עליכם לגלות קוד בן 3 ספרות בעזרת המידע שקראתם בדף הרקע:</p>
+            <div style="text-align: right; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.95rem;">
+                📌 <strong>ספרה ראשונה:</strong> מספר המוקד הלאומי להגנה על ילדים ברשת פחות 100.<br>
+                📌 <strong>ספרה שנייה:</strong> כמה שלבים יש במנגנון האימות הדו-שלבי?<br>
+                📌 <strong>ספרה שלישית:</strong> אם הסיסמה המורכבת "A@b3#k9" קיבלה ציון בטיחות מעולה, איזה ציון מגיע לסיסמה חלשה ונפוצה כמו "123456"?
+            </div>
+            <div id="code-display"></div>
+            <div class="keypad">
+                <div class="key" onclick="pressKey('1')">1</div><div class="key" onclick="pressKey('2')">2</div><div class="key" onclick="pressKey('3')">3</div>
+                <div class="key" onclick="pressKey('4')">4</div><div class="key" onclick="pressKey('5')">5</div><div class="key" onclick="pressKey('6')">6</div>
+                <div class="key" onclick="pressKey('7')">7</div><div class="key" onclick="pressKey('8')">8</div><div class="key" onclick="pressKey('9')">9</div>
+                <div class="key" style="border:none;"></div><div class="key" onclick="pressKey('0')">0</div><div class="key" onclick="clearCode()" style="font-size:1rem; color:var(--danger); border-color:var(--danger)">C</div>
+            </div>
+        </div>
+
+        <!-- מסך ניצחון -->
+        <div id="victory-screen" class="hidden">
+            <h1 style="color: var(--success); font-size: 3rem;">🏆 המערכת שוחררה! 🏆</h1>
+            <p>הצלחתם לפצח את כל החדרים, להביס את ההאקר ולהוכיח שאתם אלופי אבטחה דיגיטלית!</p>
+            <button class="action-btn" onclick="location.reload()">שחק שוב</button>
+        </div>
+
+        <!-- משוב כללי -->
+        <div id="feedback"></div>
+    </div>
+</div>
+
+<script>
+    let feedbackBox = document.getElementById('feedback');
+
+    // ניהול לשוניות
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        if(tabId === 'info-tab') document.getElementById('tab-link-info').classList.add('active');
+        if(tabId === 'game-tab') document.getElementById('tab-link-game').classList.add('active');
+    }
+
+    function showFeedback(text, isSuccess) {
+        feedbackBox.innerText = text;
+        feedbackBox.style.color = isSuccess ? 'var(--success)' : 'var(--danger)';
+        if(!isSuccess) setTimeout(() => feedbackBox.innerText = '', 2000);
+    }
+
+    function startRoom(roomNum) {
+        document.getElementById('intro-screen').classList.add('hidden');
+        document.getElementById('room1').classList.add('hidden');
+        document.getElementById('room2').classList.add('hidden');
+        document.getElementById('room3').classList.add('hidden');
+        document.getElementById('victory-screen').classList.add('hidden');
+        feedbackBox.innerText = '';
+
+        if(roomNum === 1) { document.getElementById('room1').classList.remove('hidden'); initMemoryGame(); }
+        if(roomNum === 2) { document.getElementById('room2').classList.remove('hidden'); initSortingGame(); }
+        if(roomNum === 3) { document.getElementById('room3').classList.remove('hidden'); }
+        if(roomNum === 'win') { document.getElementById('victory-screen').classList.remove('hidden'); }
+    }
+
+    // ==================== חדר 1: משחק הזיכרון ====================
+    const memoryData = [
+        { text: "פישינג (דיוג)", pairId: 1 }, { text: "קישור מזויף במייל", pairId: 1 },
+        { text: "סיסמה חזקה", pairId: 2 }, { text: "אותיות, מספרים וסימנים", pairId: 2 },
+        { text: "מוקד 105", pairId: 3 }, { text: "דיווח על פגיעה ברשת", pairId: 3 },
+        { text: "Wi-Fi ציבורי", pairId: 4 }, { text: "סכנת גניבת סיסמאות", pairId: 4 }
+    ];
+    let flippedCards = [];
+    let matchedPairs = 0;
+
+    function initMemoryGame() {
+        const grid = document.getElementById('memory-grid');
+        grid.innerHTML = '';
+        let shuffled = [...memoryData].sort(() => Math.random() - 0.5);
+        
+        shuffled.forEach((card, index) => {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'memory-card';
+            cardEl.innerText = card.text;
+            cardEl.dataset.pairId = card.pairId;
+            cardEl.dataset.index = index;
+            cardEl.onclick = () => flipCard(cardEl);
+            grid.appendChild(cardEl);
+        });
+    }
+
+    function flipCard(card) {
+        if(card.classList.contains('flipped') || card.classList.contains('matched') || flippedCards.length >= 2) return;
+
+        card.classList.add('flipped');
+        flippedCards.push(card);
+
+        if(flippedCards.length === 2) {
+            if(flippedCards[0].dataset.pairId === flippedCards[1].dataset.pairId) {
+                flippedCards[0].classList.add('matched');
+                flippedCards[1].classList.add('matched');
+                flippedCards = [];
+                matchedPairs++;
+                if(matchedPairs === 4) {
+                    showFeedback("🔓 השער הראשון נפתח! עוברים לחדר הבא...", true);
+                    setTimeout(() => startRoom(2), 1500);
+                }
+            } else {
+                setTimeout(() => {
+                    flippedCards[0].classList.remove('flipped');
+                    flippedCards[1].classList.remove('flipped');
+                    flippedCards = [];
+                }, 1000);
+            }
+        }
+    }
+
+    // ==================== חדר 2: משחק המיון ====================
+    const scenarios = [
+        { text: "הודעה מסיבוס/גוגל: 'החשבון שלך נחסם, לחץ כאן לשחרור והזן סיסמה'", isSafe: false },
+        { text: "חבר מהכיתה שולח לך סרטון מטיול שהייתם בו שבוע שעבר", isSafe: true },
+        { text: "אפליקציית פנקס רשימות מבקשת גישה לאנשי קשר, מצלמה ומיקום", isSafe: false },
+        { text: "הודעה בוואטסאפ: 'שלחתי לך קוד בטעות, תעביר לי אותו מהר'", isSafe: false },
+        { text: "אתר רשמי של משרד החינוך (עם סיומת gov.il) מבקש הזדהות משרד החינוך", isSafe: true }
+    ];
+    let currentScenarioIdx = 0;
+
+    function initSortingGame() {
+        currentScenarioIdx = 0;
+        showScenario();
+    }
+
+    function showScenario() {
+        document.getElementById('sort-progress').innerText = `איום ${currentScenarioIdx + 1} מתוך ${scenarios.length}`;
+        document.getElementById('scenarios-box').innerText = scenarios[currentScenarioIdx].text;
+    }
+
+    function handleSort(userSaidSafe) {
+        let current = scenarios[currentScenarioIdx];
+        if(userSaidSafe === current.isSafe) {
+            currentScenarioIdx++;
+            if(currentScenarioIdx >= scenarios.length) {
+                showFeedback("🔓 השער השני נפתח! המערכת כמעט משוחררת...", true);
+                setTimeout(() => startRoom(3), 1500);
+            } else {
+                showScenario();
+            }
+        } else {
+            showFeedback("❌ זיהוי שגוי! המערכת זיהתה סיכון. נסה שוב.", false);
+        }
+    }
+
+    // ==================== חדר 3: פיצוח הקוד הסופי ====================
+    const correctCode = "520"; // 105-100 = 5, אימות דו שלבי = 2, סיסמה 123456 = 0
+    let currentInputCode = "";
+
+    function pressKey(num) {
+        if(currentInputCode.length >= 3) return;
+        currentInputCode += num;
+        document.getElementById('code-display').innerText = currentInputCode;
+
+        if(currentInputCode.length === 3) {
+            if(currentInputCode === correctCode) {
+                showFeedback("🔓 הקוד נכון! הנגיף הושמד!", true);
+                setTimeout(() => startRoom('win'), 1200);
+            } else {
+                showFeedback("❌ קוד שגוי! המערכת ננעלה. נקה ונסה שוב.", false);
+                document.getElementById('code-display').style.color = 'var(--danger)';
+            }
+        }
+    }
+
+    function clearCode() {
+        currentInputCode = "";
+        document.getElementById('code-display').innerText = "";
+        document.getElementById('code-display').style.color = 'var(--danger)';
+    }
+</script>
+
+</body>
+</html>
